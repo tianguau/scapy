@@ -22,7 +22,7 @@ This module provides Scapy layers for the Packet Forwarding Control
 Protocol as defined in 3GPP TS 29.244.
 """
 
-from scapy.packet import bind_layers, Packet
+from scapy.packet import bind_layers, bind_bottom_up, Packet
 from scapy.fields import BitField, ByteEnumField, ShortField, \
     ConditionalField, LongField, ThreeBytesField, ByteField, \
     MultipleTypeField
@@ -78,3 +78,11 @@ class PFCP(Packet) :
         ConditionalField(BitField("Spare1", 0, 4), lambda pkt:pkt.S==1),
         ConditionalField(ByteField("SpareB", 0), lambda pkt:pkt.S==0)
     ]
+
+
+# Bind GTP-C
+bind_bottom_up(UDP, PFCP, dport=8805)
+bind_bottom_up(UDP, PFCP, sport=8805)
+bind_layers(UDP, PFCP, dport=8805, sport=8805)
+
+bind_layers(PFCP, )
