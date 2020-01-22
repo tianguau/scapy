@@ -25,7 +25,7 @@ Protocol as defined in 3GPP TS 29.244.
 from scapy.packet import bind_layers, bind_bottom_up, Packet
 from scapy.fields import BitField, ByteEnumField, ShortField, \
     ConditionalField, LongField, ThreeBytesField, ByteField, \
-    MultipleTypeField
+    MultipleTypeField, PacketListField
 from scapy.layers.inet import UDP
 
 PFCPMsgType = {
@@ -76,8 +76,19 @@ class PFCP(Packet) :
         ThreeBytesField("Seq", None),
         ConditionalField(BitField("MsgPriority", 0, 4), lambda pkt:pkt.S==1),
         ConditionalField(BitField("Spare1", 0, 4), lambda pkt:pkt.S==1),
-        ConditionalField(ByteField("SpareB", 0), lambda pkt:pkt.S==0)
+        ConditionalField(ByteField("SpareB", 0), lambda pkt:pkt.S==0),
+        PacketListField("IE_List", [], GuessIEType,
+            length_from=lambda pkt:pkt.Length - (16 if pkt.S==1 else 8))
     ]
+
+class PFCPMessaage(Packet):
+    def __init__(self,)
+class _FPCPMsgNode(PFCPMessaage):
+    pass
+
+class _FPCPMsgSession(PFCPMessaage):
+    pass
+
 
 
 # Bind GTP-C
