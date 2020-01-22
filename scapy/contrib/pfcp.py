@@ -76,19 +76,125 @@ class PFCP(Packet) :
         ThreeBytesField("Seq", None),
         ConditionalField(BitField("MsgPriority", 0, 4), lambda pkt:pkt.S==1),
         ConditionalField(BitField("Spare1", 0, 4), lambda pkt:pkt.S==1),
-        ConditionalField(ByteField("SpareB", 0), lambda pkt:pkt.S==0),
+        ConditionalField(ByteField("SpareB", 0), lambda pkt:pkt.S==0)
         PacketListField("IE_List", [], GuessIEType,
             length_from=lambda pkt:pkt.Length - (16 if pkt.S==1 else 8))
     ]
 
+def IE_Dispatcher(s):
+    """Choose the correct Information Element class."""
+
+    # Get the IE type
+    ietype = orb(s[0])
+    cls = ietypecls.get(ietype, Raw)
+
+    # if ietype greater than 128 are TLVs
+    if cls is Raw and ietype > 128:
+        cls = IE_NotImplementedTLV
+
+    return cls(s)
+
 class PFCPMessaage(Packet):
-    def __init__(self,)
-class _FPCPMsgNode(PFCPMessaage):
+    """PFPCP Messages"""
+    fields_desc = [PacketListField("IEList", None, IE_Dispatcher)]
+class _PFCPMsgNode(PFCPMessaage):
+    """PFCP Messages For Nodes"""
     pass
 
-class _FPCPMsgSession(PFCPMessaage):
+class _PFCPMsgSession(PFCPMessaage):
+    """PFCP Messages For Session """
     pass
 
+class PFCPMsgNodeHeartBeatReq(_PFCPMsgNode):
+    """ 1 : PFCP Heartbeat Request """
+    pass
+
+class PFCPMsgNodeHeartBeatResp(_PFCPMsgNode):
+    """ 2 : PFCP Heartbeat Response """
+    pass
+
+class PFCPMsgNodePfdManagmentReq(_PFCPMsgNode):
+    """ 3 : PFCP PFD Management Request """
+    pass
+
+class PFCPMsgNodePfdManagmentResp(_PFCPMsgNode):
+    """ 4 : PFCP PFD Management Response """
+    pass
+
+class PFCPMsgNodeAssociationSetupReq(_PFCPMsgNode):
+    """ 5 : PFCP Association Setup Request """
+    pass
+
+class PFCPMsgNodeAssociationSetupResp(_PFCPMsgNode):
+    """ 6 : PFCP Association Setup Response """
+    pass
+
+class PFCPMsgNodeAssociationUpdateReq(_PFCPMsgNode):
+    """ 7 : PFCP Association Update Request """
+    pass
+
+class PFCPMsgNodeAssociationUpdateResp(_PFCPMsgNode):
+    """ 8 : PFCP Association Update Response """
+    pass
+
+class PFCPMsgNodeAssociationReleaseReq(_PFCPMsgNode):
+    """ 9 : PFCP Association Release Request """
+    pass
+
+class PFCPMsgNodeAssociationReleaseResp(_PFCPMsgNode):
+    """ 10 : PFCP Association Release Response """
+    pass
+
+class PFCPMsgNodeVersionNotSupportResp(_PFCPMsgNode):
+    """ 11 : PFCP Version Not Supported Response """
+    pass
+
+class PFCPMsgNodeNodeReportReq(_PFCPMsgNode):
+    """ 12 : PFCP Node Report Request """
+    pass
+
+class PFCPMsgNodeNodeReportResp(_PFCPMsgNode):
+    """ 13 : PFCP Node Report Response """
+    pass
+
+class PFCPMsgNodeSessionSetDeleteReq(_PFCPMsgNode):
+    """ 14 : PFCP Session Set Deletion Request """
+    pass
+
+class PFCPMsgNodeSessionSetDeleteResp(_PFCPMsgNode):
+    """ 15 : PFCP Session Set Deletion Response """
+    pass
+
+class PFCPMsgSessionEstablishReq(_PFCPMsgSession):
+    """ 50 : PFCP Session Establishment Request """
+    pass
+
+class PFCPMsgSessionEstablishResp(_PFCPMsgSession):
+    """ 51 : PFCP Session Establishment Response """
+    pass
+
+class PFCPMsgSessionModificationReq(_PFCPMsgSession):
+    """ 52 : PFCP Session Modification Request :"""
+    pass
+
+class PFCPMsgSessionModificationResp(_PFCPMsgSession):
+    """ 53 : PFCP Session Modification Response """
+    pass
+
+class PFCPMsgSessionDeletionReq(_PFCPMsgSession):
+    """ 54 : PFCP Session Deletion Request """
+
+class PFCPMsgSessionDeletionResp(_PFCPMsgSession):
+    """ 55 : PFCP Session Deletion Response """
+    pass
+
+class PFCPMsgSessionReportReq(_PFCPMsgSession):
+    """ 56	PFCP Session Report Request """
+    pass
+
+class PFCPMsgSessionReportReq(_PFCPMsgSession):
+    """ 57 : PFCP Session Report Response """
+    pass
 
 
 # Bind GTP-C
@@ -96,4 +202,27 @@ bind_bottom_up(UDP, PFCP, dport=8805)
 bind_bottom_up(UDP, PFCP, sport=8805)
 bind_layers(UDP, PFCP, dport=8805, sport=8805)
 
-bind_layers(PFCP, )
+bind_layers(PFCP, PFCPMsgNodeHeartBeatReq, S=0, MsgType=1)
+bind_layers(PFCP, PFCPMsgNodeHeartBeatResp, S=0, MsgType=1)
+
+bind_layers(PFCP, PFCPMsgNodePfdManagmentReq, S=0, MsgType=3)
+bind_layers(PFCP, PFCPMsgNodePfdManagmentResp, S=0, MsgType=4)
+bind_layers(PFCP, PFCPMsgNodeAssociationSetupReq, S=0, MsgType=5)
+bind_layers(PFCP, PFCPMsgNodeAssociationSetupResp, S=0, MsgType=6)
+bind_layers(PFCP, PFCPMsgNodeAssociationUpdateReq, S=0, MsgType=7)
+bind_layers(PFCP, PFCPMsgNodeAssociationUpdateResp, S=0, MsgType=8)
+bind_layers(PFCP, PFCPMsgNodeAssociationReleaseReq, S=0, MsgType=9)
+bind_layers(PFCP, PFCPMsgNodeAssociationReleaseResp, S=0, MsgType=10)
+bind_layers(PFCP, PFCPMsgNodeVersionNotSupportResp, S=0, MsgType=11)
+bind_layers(PFCP, PFCPMsgNodeNodeReportReq, S=0, MsgType=12)
+bind_layers(PFCP, PFCPMsgNodeNodeReportResp, S=0, MsgType=13)
+bind_layers(PFCP, PFCPMsgNodeSessionSetDeleteReq, S=0, MsgType=14)
+bind_layers(PFCP, PFCPMsgNodeSessionSetDeleteResp, S=0, MsgType=15)
+bind_layers(PFCP, PFCPMsgSessionEstablishReq, S=1, MsgType=50)
+bind_layers(PFCP, PFCPMsgSessionEstablishResp, S=1, MsgType=51)
+bind_layers(PFCP, PFCPMsgSessionModificationReq, S=1, MsgType=52)
+bind_layers(PFCP, PFCPMsgSessionModificationResp, S=1, MsgType=53)
+bind_layers(PFCP, PFCPMsgSessionDeletionReq, S=1, MsgType=54)
+bind_layers(PFCP, PFCPMsgSessionDeletionResp, S=1, MsgType=55)
+bind_layers(PFCP, PFCPMsgSessionReportReq, S=1, MsgType=56)
+bind_layers(PFCP, PFCPMsgSessionReportReq, S=1, MsgType=57)
