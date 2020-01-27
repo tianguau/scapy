@@ -25,7 +25,8 @@ Protocol as defined in 3GPP TS 29.244.
 from scapy.packet import bind_layers, bind_bottom_up, Packet
 from scapy.fields import BitField, ByteEnumField, ShortField, \
     ConditionalField, LongField, ThreeBytesField, ByteField, \
-    MultipleTypeField, PacketListField, ShortEnumField
+    MultipleTypeField, PacketListField, ShortEnumField, \
+    StrLenField
 from scapy.layers.inet import UDP
 
 PFCPMsgType = {
@@ -135,8 +136,8 @@ IE_Types = {
     52  : (IE_,  "Sequence Number"),
     53  : (IE_,  "Metric"),
     54  : (IE_,  "Overload Control Information"),
-    55  : (IE_,  "Timer"),
-    56  : (IE_,  "Packet Detection Rule ID"),
+    55  : (IE_,  "Timer"),"""
+    56  : (IE_PDRID,                "Packet Detection Rule ID"),"""
     57  : (IE_,  "F-SEID"),
     58  : (IE_,  "Application ID's PFDs"),
     59  : (IE_,  "PFD context"),
@@ -241,14 +242,21 @@ IE_Types = {
     158 : (IE_,  "Paging Policy Indicator") """
 }
 
-class IE_Base(Packet):
+IE_Enums = {x:IE_Types[x][0] for x in IE_Types}
+IE_Names = {x:IE_Types[x][1] for x in IE_Types}
 
+class IE_Base(Packet):
     def extract_padding(self, pkt):
         return "", pkt
 
 class IE_CreatePDR(IE_Base) :
     fields_desc = []
 
+class IE_PDRID(IE_Base) :
+    fields_desc = [ ShortEnumField("type", 56, IE_Names),
+                    ShortField("length", 0),
+                    ShortField("RuleId", 0),
+                    ConditionalField(StrLenField("pad"))]
 
 class IE_NotImplementedTLV(IE_Base):
     name = "IE not implemented"
