@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 # flake8: noqa: F405
 
 # This file is part of Scapy
@@ -11,7 +10,8 @@
 # scapy.contrib.status = loads
 
 from scapy.compat import chb
-from scapy.contrib.automotive.obd.obd import *
+from scapy.contrib.automotive.obd.obd import OBD, OBD_S03, OBD_S07, OBD_S0A, \
+    OBD_S01, OBD_S06, OBD_S08, OBD_S09
 
 
 def _supported_id_numbers(socket, timeout, service_class, id_name, verbose):
