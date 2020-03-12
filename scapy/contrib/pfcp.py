@@ -278,6 +278,14 @@ class IE_Cause(IE_Base) :
 class IE_SrcIntf(IE_Base) :
     fields_desc = [ ByteEnumField("type", 20, IE_Names),
                     FieldLenField("len", )]
+
+class IE_PPI(IE_Base) :
+    fields_desc = [ ByteEnumField("type", 158, IE_Names),
+                    FieldLenField("len", 1, length_of="PpiVal"),
+                    ByteField("ppi", 0),
+                    ConditionalField(ByteField("octet"))]
+
+
 def IE_Dispatcher(s):
     """Choose the correct Information Element class."""
     # Get the IE type
