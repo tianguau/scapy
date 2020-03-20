@@ -395,7 +395,7 @@ class PFCPMsgSessionReportReq(_PFCPMsgSession):
     """ 56 : PFCP Session Report Request """
     name = "PFCP Session Report Request"
 
-class PFCPMsgSessionReportReq(_PFCPMsgSession):
+class PFCPMsgSessionReportResp(_PFCPMsgSession):
     """ 57 : PFCP Session Report Response """
     name = "PFCP Session Report Response"
 
@@ -428,4 +428,4 @@ bind_layers(PFCP, PFCPMsgSessionModificationResp, S=1, MsgType=53)
 bind_layers(PFCP, PFCPMsgSessionDeletionReq, S=1, MsgType=54)
 bind_layers(PFCP, PFCPMsgSessionDeletionResp, S=1, MsgType=55)
 bind_layers(PFCP, PFCPMsgSessionReportReq, S=1, MsgType=56)
-bind_layers(PFCP, PFCPMsgSessionReportReq, S=1, MsgType=57)
+bind_layers(PFCP, PFCPMsgSessionReportResp, S=1, MsgType=57)
