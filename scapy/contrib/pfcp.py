@@ -26,7 +26,7 @@ from scapy.packet import bind_layers, bind_bottom_up, Packet
 from scapy.fields import BitField, ByteEnumField, ShortField, \
     ConditionalField, LongField, ThreeBytesField, ByteField, \
     MultipleTypeField, PacketListField, ShortEnumField, \
-    StrLenField, FieldLenField
+    StrLenField, FieldLenField, StrField
 from scapy.layers.inet import UDP
 
 PFCPMsgType = {
@@ -285,6 +285,9 @@ class IE_PPI(IE_Base) :
                     ByteField("ppi", 0),
                     ConditionalField(ByteField("octet"))]
 
+class IE_NotImplementedTLV(IE_Base):
+    fields_desc = [StrField("load", "")]
+
 
 def IE_Dispatcher(s):
     """Choose the correct Information Element class."""
@@ -421,6 +424,7 @@ bind_layers(PFCP, PFCPMsgNodeNodeReportReq, S=0, MsgType=12)
 bind_layers(PFCP, PFCPMsgNodeNodeReportResp, S=0, MsgType=13)
 bind_layers(PFCP, PFCPMsgNodeSessionSetDeleteReq, S=0, MsgType=14)
 bind_layers(PFCP, PFCPMsgNodeSessionSetDeleteResp, S=0, MsgType=15)
+
 bind_layers(PFCP, PFCPMsgSessionEstablishReq, S=1, MsgType=50)
 bind_layers(PFCP, PFCPMsgSessionEstablishResp, S=1, MsgType=51)
 bind_layers(PFCP, PFCPMsgSessionModificationReq, S=1, MsgType=52)
