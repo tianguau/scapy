@@ -80,7 +80,212 @@ class PFCP(Packet) :
         ConditionalField(ByteField("SpareB", 0), lambda pkt:pkt.S==0)
     ]
 
-IE_Types = {
+IE_Names = {
+    0   : "Reserved",
+    1   : "Create PDR",
+    2   : "PDI",
+    3   : "Create FAR",
+    4   : "Forwarding Parameters",
+    5   : "Duplicating Parameters",
+    6   : "Create URR",
+    7   : "Create QER",
+    8   : "Created PDR",
+    9   : "Update PDR",
+    10  : "Update FAR",
+    11  : "Update Forwarding Parameters",
+    12  : "Update BAR (PFCP Session Report Response)",
+    13  : "Update URR",
+    14  : "Update QER",
+    15  : "Remove PDR",
+    16  : "Remove FAR",
+    17  : "Remove URR",
+    18  : "Remove QER",
+    19  : "Cause",
+    20  : "Source Interface",
+    21  : "F-TEID",
+    22  : "Network Instance",
+    23  : "SDF Filter",
+    24  : "Application ID",
+    25  : "Gate Status",
+    26  : "MBR",
+    27  : "GBR",
+    28  : "QER Correlation ID",
+    29  : "Precedence",
+    30  : "Transport Level Marking",
+    31  : "Volume Threshold",
+    32  : "Time Threshold",
+    33  : "Monitoring Time",
+    34  : "Subsequent Volume Threshold",
+    35  : "Subsequent Time Threshold",
+    36  : "Inactivity Detection Time",
+    37  : "Reporting Triggers",
+    38  : "Redirect Information",
+    39  : "Report Type",
+    40  : "Offending IE",
+    41  : "Forwarding Policy",
+    42  : "Destination Interface",
+    43  : "UP Function Features",
+    44  : "Apply Action",
+    45  : "Downlink Data Service Information",
+    46  : "Downlink Data Notification Delay",
+    47  : "DL Buffering Duration",
+    48  : "DL Buffering Suggested Packet Count",
+    49  : "PFCPSMReq-Flags",
+    50  : "PFCPSRRsp-Flags",
+    51  : "Load Control Information",
+    52  : "Sequence Number",
+    53  : "Metric",
+    54  : "Overload Control Information",
+    55  : "Timer",
+    56  : "Packet Detection Rule ID",
+    57  : "F-SEID",
+    58  : "Application ID's PFDs",
+    59  : "PFD context",
+    60  : "Node ID",
+    61  : "PFD contents",
+    62  : "Measurement Method",
+    63  : "Usage Report Trigger",
+    64  : "Measurement Period",
+    65  : "FQ-CSID",
+    66  : "Volume Measurement",
+    67  : "Duration Measurement",
+    68  : "Application Detection Information",
+    69  : "Time of First Packet",
+    70  : "Time of Last Packet",
+    71  : "Quota Holding Time",
+    72  : "Dropped DL Traffic Threshold",
+    73  : "Volume Quota",
+    74  : "Time Quota",
+    75  : "Start Time",
+    76  : "End Time",
+    77  : "Query URR",
+    78  : "Usage Report (in Session Modification Response)",
+    79  : "Usage Report (Session Deletion Response)",
+    80  : "Usage Report (Session Report Request)",
+    81  : "URR ID",
+    82  : "Linked URR ID",
+    83  : "Downlink Data Report",
+    84  : "Outer Header Creation",
+    85  : "Create BAR",
+    86  : "Update BAR (Session Modification Request)",
+    87  : "Remove BAR",
+    88  : "BAR ID",
+    89  : "CP Function Features",
+    90  : "Usage Information",
+    91  : "Application Instance ID",
+    92  : "Flow Information",
+    93  : "UE IP Address",
+    94  : "Packet Rate",
+    95  : "Outer Header Removal",
+    96  : "Recovery Time Stamp",
+    97  : "DL Flow Level Marking",
+    98  : "Header Enrichment",
+    99  : "Error Indication Report",
+    100 : "Measurement Information",
+    101 : "Node Report Type",
+    102 : "User Plane Path Failure Report",
+    103 : "Remote GTP-U Peer",
+    104 : "UR-SEQN",
+    105 : "Update Duplicating Parameters",
+    106 : "Activate Predefined Rules",
+    107 : "Deactivate Predefined Rules",
+    108 : "FAR ID",
+    109 : "QER ID",
+    110 : "OCI Flags",
+    111 : "PFCP Association Release Request",
+    112 : "Graceful Release Period",
+    113 : "PDN Type",
+    114 : "Failed Rule ID",
+    115 : "Time Quota Mechanism",
+    116 : "User Plane IP Resource Information",
+    117 : "User Plane Inactivity Timer",
+    118 : "Aggregated URRs",
+    119 : "Multiplier",
+    120 : "Aggregated URR ID",
+    121 : "Subsequent Volume Quota",
+    122 : "Subsequent Time Quota",
+    123 : "RQI",
+    124 : "QFI",
+    125 : "Query URR Reference",
+    126 : "Additional Usage Reports Information",
+    127 : "Create Traffic Endpoint",
+    128 : "Created Traffic Endpoint",
+    129 : "Update Traffic Endpoint",
+    130 : "Remove Traffic Endpoint",
+    131 : "Traffic Endpoint ID",
+    132 : "Ethernet Packet Filter",
+    133 : "MAC address",
+    134 : "C-TAG",
+    135 : "S-TAG",
+    136 : "Ethertype",
+    137 : "Proxying",
+    138 : "Ethernet Filter ID",
+    139 : "Ethernet Filter Properties",
+    140 : "Suggested Buffering Packets Count",
+    141 : "User ID",
+    142 : "Ethernet PDU Session Information",
+    143 : "Ethernet Traffic Information",
+    144 : "MAC Addresses Detected",
+    145 : "MAC Addresses Removed",
+    146 : "Ethernet Inactivity Timer",
+    147 : "Additional Monitoring Time",
+    148 : "Event Quota",
+    149 : "Event Threshold",
+    150 : "Subsequent Event Quota",
+    151 : "Subsequent Event Threshold",
+    152 : "Trace Information",
+    153 : "Framed-Route",
+    154 : "Framed-Routing",
+    155 : "Framed-IPv6-Route",
+    156 : "Event Time Stamp",
+    157 : "Averaging Window",
+    158 : "Paging Policy Indicator"
+}
+
+IE_CauseEnum = {
+    0   : "Reserved",                                   #Shall not be sent and if received the Cause shall be treated as an invalid IE
+    1   : "Request accepted (success)",                 #"Request accepted (success)" is returned when the PFCP entity has accepted a request.
+    #2-63   Spare.      This value range shall be used by Cause values in an acceptance response message. See NOTE 1.
+    64  : "Request rejected (reason not specified)",    #This cause shall be returned to report an unspecified rejection cause
+    65  : "Session context not found",                  #This cause shall be returned, if the F-SEID included in a PFCP Session Modification/Deletion Request message is unknown.
+    66  : "Mandatory IE missing",                       #This cause shall be returned when the PFCP entity detects that a mandatory IE is missing in a request message
+    67  : "Conditional IE missing",                     #This cause shall be returned when the PFCP entity detects that a Conditional IE is missing in a request message.
+    68  : "Invalid length",                             #This cause shall be returned when the PFCP entity detects that an IE with an invalid length in a request message
+    69  : "Mandatory IE incorrect",                     #This cause shall be returned when the PFCP entity detects that a Mandatory IE is incorrect in a request message, e.g. the Mandatory IE is malformated or it carries an invalid or unexpected value.
+    70  : "Invalid Forwarding Policy",                  #This cause shall be used by the UP function in the PFCP Session Establishment Response or PFCP Session Modification Response message if the CP function attempted to provision a FAR with a Forwarding Policy Identifier for which no Forwarding Policy is locally configured in the UP function.
+    71  : "Invalid F-TEID allocation option",           #This cause shall be used by the UP function in the PFCP Session Establishment Response or PFCP Session Modification Response message if the CP function attempted to provision a PDR with a F-TEID allocation option which is incompatible with the F-TEID allocation option used for already created PDRs (by the same or a different CP function).
+    72  : "No established PFCP Association",            #This cause shall be used by the CP function or the UP function if they receive a PFCP Session related message from a peer with which there is no established PFCP Association.
+    73  : "Rule creation/modification Failure",         #This cause shall be used by the UP function if a received Rule failed to be stored and  be applied in the UP function.
+    74  : "PFCP entity in congestion",                  #This cause shall be returned when a PFCP entity has detected node level congestion and performs overload control, which does not allow the request to be processed.
+    75  : "No resources available",                     #This cause shall be returned to indicate a temporary unavailability of resources to process the received request.
+    76  : "Service not supported",                      #This cause shall be returned when a PFCP entity receives a message requesting a feature or service that is not supported. 
+    77  : "System failure",                             #This cause shall be returned to indicate a system error condition. 
+    #78 to 255	Spare for future use in a response message. See NOTE 2.	This value range shall be used by Cause values in a rejection response message. See NOTE 2.
+}
+
+class IE_Base(Packet):
+    def extract_padding(self, pkt):
+        return "", pkt
+
+class IE_Cause(IE_Base) :
+    fields_desc = [ ByteEnumField("type", 19, IE_Names),
+                    FieldLenField("len", 1, length_of="causeid"),
+                    ByteEnumField("causeid", 0, IE_CauseEnum)]
+"""
+class IE_SrcIntf(IE_Base) :
+    fields_desc = [ ByteEnumField("type", 20, IE_Names),
+                    FieldLenField("len", )]
+
+class IE_PPI(IE_Base) :
+    fields_desc = [ ByteEnumField("type", 158, IE_Names),
+                    FieldLenField("len", 1, length_of="PpiVal"),
+                    ByteField("ppi", 0),
+                    ConditionalField(ByteField("octet"))]
+"""
+class IE_NotImplementedTLV(IE_Base):
+    fields_desc = [StrField("load", "")]
+
+IE_Enums = {
 #    0   : (IE_NotImplementedTLV,    "Reserved"),
 #    1   : (IE_CreatePDR,            "Create PDR"),
 #    2   : (IE_PDI,                  "PDI"),
@@ -100,7 +305,7 @@ IE_Types = {
 #    16  : (IE_,  "Remove FAR"),
 #    17  : (IE_,  "Remove URR"),
 #    18  : (IE_,  "Remove QER"),
-    19  : (IE_Cause,  "Cause"),
+    19  : IE_Cause,
 #    20  : (IE_,  "Source Interface"),
 #    21  : (IE_,  "F-TEID"),
 #    22  : (IE_,  "Network Instance"),
@@ -242,65 +447,23 @@ IE_Types = {
 #    158 : (IE_,  "Paging Policy Indicator")
 }
 
-IE_Enums = {x:IE_Types[x][0] for x in IE_Types}
-IE_Names = {x:IE_Types[x][1] for x in IE_Types}
-
-IE_CauseEnum = {
-    0   : "Reserved",                                   #Shall not be sent and if received the Cause shall be treated as an invalid IE
-    1   : "Request accepted (success)",                 #"Request accepted (success)" is returned when the PFCP entity has accepted a request.
-    #2-63   Spare.      This value range shall be used by Cause values in an acceptance response message. See NOTE 1.
-    64  : "Request rejected (reason not specified)",    #This cause shall be returned to report an unspecified rejection cause
-    65  : "Session context not found",                  #This cause shall be returned, if the F-SEID included in a PFCP Session Modification/Deletion Request message is unknown.
-    66  : "Mandatory IE missing",                       #This cause shall be returned when the PFCP entity detects that a mandatory IE is missing in a request message
-    67  : "Conditional IE missing",                     #This cause shall be returned when the PFCP entity detects that a Conditional IE is missing in a request message.
-    68  : "Invalid length",                             #This cause shall be returned when the PFCP entity detects that an IE with an invalid length in a request message
-    69  : "Mandatory IE incorrect",                     #This cause shall be returned when the PFCP entity detects that a Mandatory IE is incorrect in a request message, e.g. the Mandatory IE is malformated or it carries an invalid or unexpected value.
-    70  : "Invalid Forwarding Policy",                  #This cause shall be used by the UP function in the PFCP Session Establishment Response or PFCP Session Modification Response message if the CP function attempted to provision a FAR with a Forwarding Policy Identifier for which no Forwarding Policy is locally configured in the UP function.
-    71  : "Invalid F-TEID allocation option",           #This cause shall be used by the UP function in the PFCP Session Establishment Response or PFCP Session Modification Response message if the CP function attempted to provision a PDR with a F-TEID allocation option which is incompatible with the F-TEID allocation option used for already created PDRs (by the same or a different CP function).
-    72  : "No established PFCP Association",            #This cause shall be used by the CP function or the UP function if they receive a PFCP Session related message from a peer with which there is no established PFCP Association.
-    73  : "Rule creation/modification Failure",         #This cause shall be used by the UP function if a received Rule failed to be stored and  be applied in the UP function.
-    74  : "PFCP entity in congestion",                  #This cause shall be returned when a PFCP entity has detected node level congestion and performs overload control, which does not allow the request to be processed.
-    75  : "No resources available",                     #This cause shall be returned to indicate a temporary unavailability of resources to process the received request.
-    76  : "Service not supported",                      #This cause shall be returned when a PFCP entity receives a message requesting a feature or service that is not supported. 
-    77  : "System failure",                             #This cause shall be returned to indicate a system error condition. 
-    #78 to 255	Spare for future use in a response message. See NOTE 2.	This value range shall be used by Cause values in a rejection response message. See NOTE 2.
-}
-
-class IE_Base(Packet):
-    def extract_padding(self, pkt):
-        return "", pkt
-
-class IE_Cause(IE_Base) :
-    fields_desc = [ ByteEnumField("type", 19, IE_Names),
-                    FieldLenField("len", 1, length_of="causeid"),
-                    ByteEnumField("causeid", 0, IE_CauseEnum)]
-
-class IE_SrcIntf(IE_Base) :
-    fields_desc = [ ByteEnumField("type", 20, IE_Names),
-                    FieldLenField("len", )]
-
-class IE_PPI(IE_Base) :
-    fields_desc = [ ByteEnumField("type", 158, IE_Names),
-                    FieldLenField("len", 1, length_of="PpiVal"),
-                    ByteField("ppi", 0),
-                    ConditionalField(ByteField("octet"))]
-
-class IE_NotImplementedTLV(IE_Base):
-    fields_desc = [StrField("load", "")]
-
 
 def IE_Dispatcher(s):
     """Choose the correct Information Element class."""
     # Get the IE type
     ietype = orb(s[0])*16 + orb(s[1])
-    cls = ietypecls.get(ietype, IE_NotImplementedTLV)
-    result = cls[0](s)
-    result.name = cls[1]
-    return result
+    cls = IE_Enums.get(ietype, IE_NotImplementedTLV)
+    result = cls
+    if cls is not IE_NotImplementedTLV :
+        result.name = IE_Names[ietype]
+    else :
+        result.name = IE_Names[0]
+
+    return result(s)
 
 class PFCPMessaage(Packet):
     """PFPCP Messages"""
-    fields_desc = [PacketListField("IEList", None, IE_Dispatcher)]
+    fields_desc = [PacketListField("IEList", None, cls=IE_Dispatcher)]
 class _PFCPMsgNode(PFCPMessaage):
     """PFCP Messages For Nodes"""
     pass
