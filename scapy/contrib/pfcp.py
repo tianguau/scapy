@@ -22,11 +22,12 @@ This module provides Scapy layers for the Packet Forwarding Control
 Protocol as defined in 3GPP TS 29.244.
 """
 
+from scapy.compat import orb
 from scapy.packet import bind_layers, bind_bottom_up, Packet
-from scapy.fields import BitField, ByteEnumField, ShortField, \
-    ConditionalField, LongField, ThreeBytesField, ByteField, \
+from scapy.fields import BitField, BitEnumField, ByteEnumField, ShortField, \
+    ConditionalField, LongField, ThreeBytesField, ByteField, IntField, \
     MultipleTypeField, PacketListField, ShortEnumField, \
-    StrLenField, FieldLenField, StrField
+    StrLenField, FieldLenField, StrField, IPField, IP6Field
 from scapy.layers.inet import UDP
 
 PFCPMsgType = {
@@ -263,25 +264,145 @@ IE_CauseEnum = {
     #78 to 255	Spare for future use in a response message. See NOTE 2.	This value range shall be used by Cause values in a rejection response message. See NOTE 2.
 }
 
+IE_Enums = {}
+
+class IE_NotImplementedTLV:
+    pass
+
+def IE_Dispatcher(s):
+    """Choose the correct Information Element class."""
+    # Get the IE type
+    ietype = orb(s[0])*16 + orb(s[1])
+    print(ietype)
+    cls = IE_Enums.get(ietype, IE_NotImplementedTLV)
+    print(cls)
+    result = cls
+    if cls is not IE_NotImplementedTLV :
+        result.name = IE_Names[ietype]
+    else :
+        result.name = IE_Names[0]
+    print(result.name)
+    return result(s)
+
 class IE_Base(Packet):
     def extract_padding(self, pkt):
         return "", pkt
 
-class IE_Cause(IE_Base) :
-    fields_desc = [ ByteEnumField("type", 19, IE_Names),
+class IE_CreatedPDR(IE_Base):
+    fields_desc = [ ShortEnumField("type", 8, IE_Names),
                     FieldLenField("len", 1, length_of="causeid"),
-                    ByteEnumField("causeid", 0, IE_CauseEnum)]
+                    PacketListField("IEList", None, cls=IE_Dispatcher)
+                  ]
+class IE_Cause(IE_Base) :
+    fields_desc = [ ShortEnumField("type", 19, IE_Names),
+                    FieldLenField("len", 1, length_of="causeid"),
+                    ByteEnumField("causeid", 0, IE_CauseEnum),
+                    ConditionalField(StrLenField("raw","",length_from=lambda pkt:pkt.len-1), lambda pkt:pkt.len-1)
+                  ]
 """
 class IE_SrcIntf(IE_Base) :
-    fields_desc = [ ByteEnumField("type", 20, IE_Names),
+    fields_desc = [ ShortEnumField("type", 20, IE_Names),
                     FieldLenField("len", )]
+"""
 
+"""
 class IE_PPI(IE_Base) :
-    fields_desc = [ ByteEnumField("type", 158, IE_Names),
+    fields_desc = [ ShortEnumField("type", 158, IE_Names),
                     FieldLenField("len", 1, length_of="PpiVal"),
                     ByteField("ppi", 0),
                     ConditionalField(ByteField("octet"))]
 """
+
+def IE_FTEIDLen(pkt, f):
+    pass
+
+class IE_FTEID(IE_Base):
+    fields_desc = [ ShortEnumField("type", 21, IE_Names),
+                    FieldLenField("len", 1, adjust=IE_FTEIDLen),
+                    BitField("spare", 0, 5),
+                    BitField("chid", 0, 1),
+                    BitField("ch", 0, 1),
+                    BitField("v6", 0, 1),
+                    BitField("v4", 0, 1),
+                    ConditionalField(IntField("TEID", 0), lambda pkt:pkt.ch==0),
+                    ConditionalField(IPField("ipv4", 0), lambda pkt:pkt.ch==0 and pkt.v4==1),
+                    ConditionalField(IPField("ipv6", 0), lambda pkt:pkt.ch==0 and pkt.v6==1),
+                    ConditionalField(ByteField("ChooseID", 0), lambda pkt:pkt.chid==1)
+                ##  ConditionalField(StrLenField("raw","",length_from=lambda pkt:pkt.len-2), lambda pkt:pkt.len>2)
+                  ]
+
+class IE_PDRID(IE_Base):
+    fields_desc = [ ShortEnumField("type", 56, IE_Names),
+                    FieldLenField("len", 2, length_of="RuleID"),
+                    ShortField("RuleID", 0),
+                    ConditionalField(StrLenField("raw","",length_from=lambda pkt:pkt.len-2), lambda pkt:pkt.len>2)
+                  ]
+
+
+def IE_FSEIDSpare(pkt):
+    len = pkt.len - 9
+    if pkt.v4 :
+        len = len - 4
+    if pkt.v6 :
+        len = len - 16
+    return len
+
+def IE_FSEIDLen(pkt, f) :
+    len = 9
+    if pkt.v4 :
+        len = len + 4
+    if pkt.v6 :
+        len = len + 16
+    return len
+
+class IE_FSEID(IE_Base) :
+    fields_desc = [ ShortEnumField("type", 57, IE_Names),
+                    FieldLenField("len", 1, adjust=IE_FSEIDLen),
+                    BitField("spare", 0, 6),
+                    BitField("v4", 0, 1),
+                    BitField("v6", 0, 1),
+                    LongField("TEID", None),
+                    ConditionalField(IPField("ipv4", 0), lambda pkt:pkt.v4),
+                    ConditionalField(IP6Field("ipv6", 0), lambda pkt:pkt.v6),
+                    ConditionalField(StrLenField("raw","",length_from=IE_FSEIDSpare), lambda pkt:IE_FSEIDSpare(pkt)>0)
+                  ]
+
+IE_NodeType = {
+    0: "IPv4 Address",
+    1: "IPv6 Address",
+    3: "FQDN"
+}
+
+def IE_NodeIDSpare(pkt) :
+    if pkt.NodeType == 0 :
+        return pkt.len - 1 - 4
+    elif pkt.NodeType == 1 :
+        return pkt.len - 1 - 16
+    elif pkt.NodeType == 2 :
+        return 0
+    else :
+        return pkt.len
+
+def IE_NodeIDLen(pkt, f) :
+    if pkt.NodeType == 0 :
+        return 4
+    elif pkt.NodeType == 1 :
+        return 16
+    elif pkt.NodeType == 2 :
+        return len(pkt.fqdn)
+    else :
+        return 0
+
+class IE_NodeID(IE_Base) :
+    fields_desc =  [ ShortEnumField("type", 60, IE_Names),
+                     FieldLenField("len", 1, adjust=IE_NodeIDLen),
+                     BitField("spare", 0, 4),
+                     BitEnumField("NodeType", 0, 4, IE_NodeType),
+                     ConditionalField(IPField("ipv4", 0),  lambda pkt: pkt.NodeType == 0),
+                     ConditionalField(IP6Field("ipv6", 0),  lambda pkt: pkt.NodeType == 1),
+                     ConditionalField(StrLenField("fqdn", "", length_from=lambda pkt:pkt.len-1),  lambda pkt: pkt.NodeType == 2),
+                     ConditionalField(StrLenField("raw","",length_from=IE_NodeIDSpare), lambda pkt:IE_NodeIDSpare(pkt)>0)
+                  ]
 class IE_NotImplementedTLV(IE_Base):
     fields_desc = [StrField("load", "")]
 
@@ -294,7 +415,7 @@ IE_Enums = {
 #    5   : (IE_DuplicatingParam,     "Duplicating Parameters"),
 #    6   : (IE_CreateURR,            "Create URR"),
 #    7   : (IE_CreateQER,            "Create QER"),
-#    8   : (IE_CreatedPDR,           "Created PDR"),
+    8   : IE_CreatedPDR,
 #    9   : (IE_UpdatePDR,            "Update PDR"),
 #    10  : (IE_UpdateFAR,            "Update FAR"),
 #    11  : (IE_UpdateForwardingParam,"Update Forwarding Parameters"),
@@ -307,7 +428,7 @@ IE_Enums = {
 #    18  : (IE_,  "Remove QER"),
     19  : IE_Cause,
 #    20  : (IE_,  "Source Interface"),
-#    21  : (IE_,  "F-TEID"),
+    21  : IE_FTEID,
 #    22  : (IE_,  "Network Instance"),
 #    23  : (IE_,  "SDF Filter"),
 #    24  : (IE_,  "Application ID"),
@@ -342,11 +463,11 @@ IE_Enums = {
 #    53  : (IE_,  "Metric"),
 #    54  : (IE_,  "Overload Control Information"),
 #    55  : (IE_,  "Timer"),
-#    56  : (IE_PDRID,                "Packet Detection Rule ID"),
-#    57  : (IE_,  "F-SEID"),
+    56  : IE_PDRID,
+    57  : IE_FSEID,
 #    58  : (IE_,  "Application ID's PFDs"),
 #    59  : (IE_,  "PFD context"),
-#    60  : (IE_,  "Node ID"),
+    60  : IE_NodeID,
 #    61  : (IE_,  "PFD contents"),
 #    62  : (IE_,  "Measurement Method"),
 #    63  : (IE_,  "Usage Report Trigger"),
@@ -448,18 +569,6 @@ IE_Enums = {
 }
 
 
-def IE_Dispatcher(s):
-    """Choose the correct Information Element class."""
-    # Get the IE type
-    ietype = orb(s[0])*16 + orb(s[1])
-    cls = IE_Enums.get(ietype, IE_NotImplementedTLV)
-    result = cls
-    if cls is not IE_NotImplementedTLV :
-        result.name = IE_Names[ietype]
-    else :
-        result.name = IE_Names[0]
-
-    return result(s)
 
 class PFCPMessaage(Packet):
     """PFPCP Messages"""
