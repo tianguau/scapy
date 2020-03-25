@@ -22,6 +22,11 @@ This module provides Scapy layers for the Packet Forwarding Control
 Protocol as defined in 3GPP TS 29.244.
 """
 
+"""
+TODO:
+    1. Spare
+"""
+
 from scapy.compat import orb
 from scapy.packet import bind_layers, bind_bottom_up, Packet
 from scapy.fields import BitField, BitEnumField, ByteEnumField, ShortField, \
@@ -288,30 +293,134 @@ class IE_Base(Packet):
     def extract_padding(self, pkt):
         return "", pkt
 
-class IE_CreatedPDR(IE_Base):
-    fields_desc = [ ShortEnumField("type", 8, IE_Names),
-                    FieldLenField("len", 1, length_of="causeid"),
+class IE_CreatePDR(IE_Base):
+    fields_desc = [ ShortEnumField("type", 1, IE_Names),
+                    FieldLenField("len", 1, length_of="IEList"),
                     PacketListField("IEList", None, cls=IE_Dispatcher)
                   ]
+
+class IE_PDI(IE_Base):
+    fields_desc = [ ShortEnumField("type", 2, IE_Names),
+                    FieldLenField("len", 1, length_of="IEList"),
+                    PacketListField("IEList", None, cls=IE_Dispatcher)
+                  ]
+
+class IE_CreateFAR(IE_Base):
+    fields_desc = [ ShortEnumField("type", 3, IE_Names),
+                    FieldLenField("len", 1, length_of="IEList"),
+                    PacketListField("IEList", None, cls=IE_Dispatcher)
+                  ]
+
+class IE_ForwardingParam(IE_Base):
+    fields_desc = [ ShortEnumField("type", 4, IE_Names),
+                    FieldLenField("len", 1, length_of="IEList"),
+                    PacketListField("IEList", None, cls=IE_Dispatcher)
+                  ]
+
+class IE_DuplicatingParam(IE_Base):
+    fields_desc = [ ShortEnumField("type", 5, IE_Names),
+                    FieldLenField("len", 1, length_of="IEList"),
+                    PacketListField("IEList", None, cls=IE_Dispatcher)
+                  ]
+
+class IE_CreateURR(IE_Base):
+    fields_desc = [ ShortEnumField("type", 6, IE_Names),
+                    FieldLenField("len", 1, length_of="IEList"),
+                    PacketListField("IEList", None, cls=IE_Dispatcher)
+                  ]
+
+class IE_CreateQER(IE_Base):
+    fields_desc = [ ShortEnumField("type", 7, IE_Names),
+                    FieldLenField("len", 1, length_of="IEList"),
+                    PacketListField("IEList", None, cls=IE_Dispatcher)
+                  ]
+
+class IE_CreatedPDR(IE_Base):
+    fields_desc = [ ShortEnumField("type", 8, IE_Names),
+                    FieldLenField("len", 1, length_of="IEList"),
+                    PacketListField("IEList", None, cls=IE_Dispatcher)
+                  ]
+
+class IE_UpdatePDR(IE_Base):
+    fields_desc = [ ShortEnumField("type", 9, IE_Names),
+                    FieldLenField("len", 1, length_of="IEList"),
+                    PacketListField("IEList", None, cls=IE_Dispatcher)
+                  ]
+
+class IE_UpdateFAR(IE_Base):
+    fields_desc = [ ShortEnumField("type", 10, IE_Names),
+                    FieldLenField("len", 1, length_of="IEList"),
+                    PacketListField("IEList", None, cls=IE_Dispatcher)
+                  ]
+
+class IE_UpdateForwardingParam(IE_Base):
+    fields_desc = [ ShortEnumField("type", 11, IE_Names),
+                    FieldLenField("len", 1, length_of="IEList"),
+                    PacketListField("IEList", None, cls=IE_Dispatcher)
+                  ]
+
+class IE_UpdateBar(IE_Base):
+    fields_desc = [ ShortEnumField("type", 12, IE_Names),
+                    FieldLenField("len", 1, length_of="IEList"),
+                    PacketListField("IEList", None, cls=IE_Dispatcher)
+                  ]
+
+class IE_UpdateURR(IE_Base):
+    fields_desc = [ ShortEnumField("type", 13, IE_Names),
+                    FieldLenField("len", 1, length_of="IEList"),
+                    PacketListField("IEList", None, cls=IE_Dispatcher)
+                  ]
+
+class IE_UpdateQER(IE_Base):
+    fields_desc = [ ShortEnumField("type", 14, IE_Names),
+                    FieldLenField("len", 1, length_of="IEList"),
+                    PacketListField("IEList", None, cls=IE_Dispatcher)
+                  ]
+
+class IE_RemovePDR(IE_Base):
+    fields_desc = [ ShortEnumField("type", 15, IE_Names),
+                    FieldLenField("len", 1, length_of="IEList"),
+                    PacketListField("IEList", None, cls=IE_Dispatcher)
+                  ]
+
+class IE_RemoveFAR(IE_Base):
+    fields_desc = [ ShortEnumField("type", 16, IE_Names),
+                    FieldLenField("len", 1, length_of="IEList"),
+                    PacketListField("IEList", None, cls=IE_Dispatcher)
+                  ]
+
+class IE_RemoveURR(IE_Base):
+    fields_desc = [ ShortEnumField("type", 17, IE_Names),
+                    FieldLenField("len", 1, length_of="IEList"),
+                    PacketListField("IEList", None, cls=IE_Dispatcher)
+                  ]
+
+class IE_RemoveQER(IE_Base):
+    fields_desc = [ ShortEnumField("type", 18, IE_Names),
+                    FieldLenField("len", 1, length_of="IEList"),
+                    PacketListField("IEList", None, cls=IE_Dispatcher)
+                  ]
+
 class IE_Cause(IE_Base) :
     fields_desc = [ ShortEnumField("type", 19, IE_Names),
                     FieldLenField("len", 1, length_of="causeid"),
                     ByteEnumField("causeid", 0, IE_CauseEnum),
                     ConditionalField(StrLenField("raw","",length_from=lambda pkt:pkt.len-1), lambda pkt:pkt.len-1)
                   ]
-"""
-class IE_SrcIntf(IE_Base) :
-    fields_desc = [ ShortEnumField("type", 20, IE_Names),
-                    FieldLenField("len", )]
-"""
 
-"""
-class IE_PPI(IE_Base) :
-    fields_desc = [ ShortEnumField("type", 158, IE_Names),
-                    FieldLenField("len", 1, length_of="PpiVal"),
-                    ByteField("ppi", 0),
-                    ConditionalField(ByteField("octet"))]
-"""
+IE_SourceInterfaceVal = {
+    0 : "Access",
+    1 : "Core",
+    2 : "SGi-LAN/N6-LAN",
+    3 : "CP-function"
+}
+
+class IE_SourceInterface(IE_Base) :
+    fields_desc = [ ShortEnumField("type", 19, IE_Names),
+                    FieldLenField("len", 1, length_of="causeid"),
+                    BitField("spare",0,4),
+                    BitEnumField("ItfVal",0,4,IE_SourceInterfaceVal)
+                  ]
 
 def IE_FTEIDLen(pkt, f):
     pass
@@ -319,7 +428,7 @@ def IE_FTEIDLen(pkt, f):
 class IE_FTEID(IE_Base):
     fields_desc = [ ShortEnumField("type", 21, IE_Names),
                     FieldLenField("len", 1, adjust=IE_FTEIDLen),
-                    BitField("spare", 0, 5),
+                    BitField("spare", 0, 4),
                     BitField("chid", 0, 1),
                     BitField("ch", 0, 1),
                     BitField("v6", 0, 1),
@@ -403,31 +512,40 @@ class IE_NodeID(IE_Base) :
                      ConditionalField(StrLenField("fqdn", "", length_from=lambda pkt:pkt.len-1),  lambda pkt: pkt.NodeType == 2),
                      ConditionalField(StrLenField("raw","",length_from=IE_NodeIDSpare), lambda pkt:IE_NodeIDSpare(pkt)>0)
                   ]
+
+"""
+class IE_PPI(IE_Base) :
+    fields_desc = [ ShortEnumField("type", 158, IE_Names),
+                    FieldLenField("len", 1, length_of="PpiVal"),
+                    ByteField("ppi", 0),
+                    ConditionalField(ByteField("octet"))]
+"""
+
 class IE_NotImplementedTLV(IE_Base):
     fields_desc = [StrField("load", "")]
 
 IE_Enums = {
-#    0   : (IE_NotImplementedTLV,    "Reserved"),
-#    1   : (IE_CreatePDR,            "Create PDR"),
-#    2   : (IE_PDI,                  "PDI"),
-#    3   : (IE_CreateFAR,            "Create FAR"),
-#    4   : (IE_ForwardingParam,      "Forwarding Parameters"),
-#    5   : (IE_DuplicatingParam,     "Duplicating Parameters"),
-#    6   : (IE_CreateURR,            "Create URR"),
-#    7   : (IE_CreateQER,            "Create QER"),
+    0   : IE_NotImplementedTLV,
+    1   : IE_CreatePDR,
+    2   : IE_PDI,
+    3   : IE_CreateFAR,
+    4   : IE_ForwardingParam,
+    5   : IE_DuplicatingParam,
+    6   : IE_CreateURR,
+    7   : IE_CreateQER,
     8   : IE_CreatedPDR,
-#    9   : (IE_UpdatePDR,            "Update PDR"),
-#    10  : (IE_UpdateFAR,            "Update FAR"),
-#    11  : (IE_UpdateForwardingParam,"Update Forwarding Parameters"),
-#    12  : (IE_UpdateBar,            "Update BAR (PFCP Session Report Response)"),
-#    13  : (IE_,  "Update URR"),
-#    14  : (IE_,  "Update QER"),
-#    15  : (IE_,  "Remove PDR"),
-#    16  : (IE_,  "Remove FAR"),
-#    17  : (IE_,  "Remove URR"),
-#    18  : (IE_,  "Remove QER"),
+    9   : IE_UpdatePDR,
+    10  : IE_UpdateFAR,
+    11  : IE_UpdateForwardingParam,
+    12  : IE_UpdateBar,
+    13  : IE_UpdateURR,
+    14  : IE_UpdateQER,
+    15  : IE_RemovePDR,
+    16  : IE_RemoveFAR,
+    17  : IE_RemoveURR,
+    18  : IE_RemoveQER,
     19  : IE_Cause,
-#    20  : (IE_,  "Source Interface"),
+    20  : IE_SourceInterface,
     21  : IE_FTEID,
 #    22  : (IE_,  "Network Instance"),
 #    23  : (IE_,  "SDF Filter"),
