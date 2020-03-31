@@ -32,7 +32,9 @@ from scapy.packet import bind_layers, bind_bottom_up, Packet
 from scapy.fields import BitField, BitEnumField, ByteEnumField, ShortField, \
     ConditionalField, LongField, ThreeBytesField, ByteField, IntField, \
     MultipleTypeField, PacketListField, ShortEnumField, \
-    StrLenField, FieldLenField, StrField, IPField, IP6Field
+    StrLenField, FieldLenField, StrField, IPField, IP6Field, \
+    FiveBytesField
+
 from scapy.layers.inet import UDP
 
 PFCPMsgType = {
@@ -416,7 +418,7 @@ IE_SourceInterfaceVal = {
 }
 
 class IE_SourceInterface(IE_Base) :
-    fields_desc = [ ShortEnumField("type", 19, IE_Names),
+    fields_desc = [ ShortEnumField("type", 20, IE_Names),
                     FieldLenField("len", 1, length_of="causeid"),
                     BitField("spare",0,4),
                     BitEnumField("ItfVal",0,4,IE_SourceInterfaceVal)
@@ -438,6 +440,116 @@ class IE_FTEID(IE_Base):
                     ConditionalField(IPField("ipv6", 0), lambda pkt:pkt.ch==0 and pkt.v6==1),
                     ConditionalField(ByteField("ChooseID", 0), lambda pkt:pkt.chid==1)
                 ##  ConditionalField(StrLenField("raw","",length_from=lambda pkt:pkt.len-2), lambda pkt:pkt.len>2)
+                  ]
+
+class IE_NetworkInstance(IE_Base):
+    fields_desc = [ ShortEnumField("type", 22, IE_Names),
+                    FieldLenField("len", 1, length_of="NetworkInst"),
+                    StrField("NetworkInst",0)
+                  ]
+
+class IE_SDFFilter(IE_Base):
+    fields_desc = [ ShortEnumField("type", 23, IE_Names),
+                    FieldLenField("len", 1, length_of="NetworkInst"),
+                    BitField("spare", 0, 4),
+                    BitField("BID", 0, 1),
+                    BitField("FL", 0, 1),
+                    BitField("SPI", 0, 1),
+                    BitField("TTC", 0, 1),
+                    BitField("FD", 0, 1),
+                    ByteField("RSVD", 0),
+                    ConditionalField(ShortField("LenFD",0), lambda pkt:pkt.FD==1),
+                    ConditionalField(StrField("FDDesc", ""), lambda pkt:pkt.FD==1 and pkt.LenFD!=0),
+                    ConditionalField(ShortField("ToSTC", 0), lambda pkt:pkt.TTC==1),
+                    ConditionalField(LongField("SecParaIdx",0), lambda pkt:pkt.SPI==1),
+                    ConditionalField(ShortField("FlowLabel",0), lambda pkt:pkt.FL==1),
+                    ConditionalField(LongField("SDFFilterId",0), lambda pkt:pkt.BID==1),
+                  ]
+
+class IE_ApplicationID(IE_Base):
+    fields_desc = [ ShortEnumField("type", 24, IE_Names),
+                    FieldLenField("len", 1, length_of="AppID"),
+                    StrLenField("AppID", "")
+                  ]
+
+IE_GateState = {
+    0:  "OPEN",
+    1:  "CLOSE"
+}
+class IE_GateStatus(IE_Base):
+    fields_desc = [ ShortEnumField("type", 25, IE_Names),
+                    FieldLenField("len", 1, length_of="AppID"),
+                    BitField("spare", 0, 4),
+                    BitEnumField("ULGate",0,2,IE_GateState),
+                    BitEnumField("DLGate",0,2,IE_GateState)
+                  ]
+
+class IE_MBR(IE_Base):
+    fields_desc = [ ShortEnumField("type", 26, IE_Names),
+                    FieldLenField("len", 1, length_of="NetworkInst"),
+                    FiveBytesField("UlMbr", 0),
+                    FiveBytesField("DlMbr", 0)
+                  ]
+
+class IE_GBR(IE_Base):
+    fields_desc = [ ShortEnumField("type", 27, IE_Names),
+                    FieldLenField("len", 1, length_of="NetworkInst"),
+                    FiveBytesField("UlGbr", 0),
+                    FiveBytesField("DlGbr", 0)
+                  ]
+
+class IE_QERCorrelationID(IE_Base):
+    fields_desc = [ ShortEnumField("type", 28, IE_Names),
+                    FieldLenField("len", 1, length_of="QERCorrelationID"),
+                    IntField("QERCorrelationID", 0)
+                  ]
+
+class IE_Precedence(IE_Base):
+    fields_desc = [ ShortEnumField("type", 29, IE_Names),
+                    FieldLenField("len", 1, length_of="PrecedenceVal"),
+                    IntField("PrecedenceVal", 0)
+                  ]
+
+class IE_TransportLevelMarking(IE_Base):
+    fields_desc = [ ShortEnumField("type", 30, IE_Names),
+                    FieldLenField("len", 1, length_of="TrafficClass"),
+                    ShortField("TrafficClass", 0)
+                  ]
+
+class IE_VolumeThreshold(IE_Base):
+    fields_desc = [ ShortEnumField("type", 31, IE_Names),
+                    FieldLenField("len", 1, length_of="TrafficClass"),
+                    BitField("spare", 0, 5),
+                    BitField("DLVOL", 0, 1),
+                    BitField("ULVOL", 0, 1),
+                    BitField("TOVOL", 0, 1),
+                    ConditionalField(LongField("TotalVol",0), lambda pkt:pkt.TOVOL==1),
+                    ConditionalField(LongField("UpLinkVol",0), lambda pkt:pkt.UPVOL==1),
+                    ConditionalField(LongField("DnLinkVol",0), lambda pkt:pkt.DLVOL==1)
+                  ]
+
+class IE_TimeThreshold(IE_Base):
+    fields_desc = [ ShortEnumField("type", 32, IE_Names),
+                    FieldLenField("len", 1, length_of="TimeThreshold"),
+                    IntField("TimeThreshold", 0)
+                  ]
+
+class IE_MonitoringTime(IE_Base):
+    fields_desc = [ ShortEnumField("type", 33, IE_Names),
+                    FieldLenField("len", 1, length_of="MonitoringTime"),
+                    IntField("MonitoringTime", 0)
+                  ]
+
+class IE_SubsequentVolumeThreshold(IE_Base):
+    fields_desc = [ ShortEnumField("type", 34, IE_Names),
+                    FieldLenField("len", 1, length_of="TrafficClass"),
+                    BitField("spare", 0, 5),
+                    BitField("DLVOL", 0, 1),
+                    BitField("ULVOL", 0, 1),
+                    BitField("TOVOL", 0, 1),
+                    ConditionalField(LongField("TotalVol",0), lambda pkt:pkt.TOVOL==1),
+                    ConditionalField(LongField("UpLinkVol",0), lambda pkt:pkt.UPVOL==1),
+                    ConditionalField(LongField("DnLinkVol",0), lambda pkt:pkt.DLVOL==1)
                   ]
 
 class IE_PDRID(IE_Base):
@@ -547,19 +659,19 @@ IE_Enums = {
     19  : IE_Cause,
     20  : IE_SourceInterface,
     21  : IE_FTEID,
-#    22  : (IE_,  "Network Instance"),
-#    23  : (IE_,  "SDF Filter"),
-#    24  : (IE_,  "Application ID"),
-#    25  : (IE_,  "Gate Status"),
-#    26  : (IE_,  "MBR"),
-#    27  : (IE_,  "GBR"),
-#    28  : (IE_,  "QER Correlation ID"),
-#    29  : (IE_,  "Precedence"),
-#    30  : (IE_,  "Transport Level Marking"),
-#    31  : (IE_,  "Volume Threshold"),
-#    32  : (IE_,  "Time Threshold"),
-#    33  : (IE_,  "Monitoring Time"),
-#    34  : (IE_,  "Subsequent Volume Threshold"),
+    22  : IE_NetworkInstance,
+    23  : IE_SDFFilter,
+    24  : IE_ApplicationID,
+    25  : IE_GateStatus,
+    26  : IE_MBR,
+    27  : IE_GBR,
+    28  : IE_QERCorrelationID,
+    29  : IE_Precedence,
+    30  : IE_TransportLevelMarking,
+    31  : IE_VolumeThreshold,
+    32  : IE_TimeThreshold,
+    33  : IE_MonitoringTime,
+    34  : IE_SubsequentVolumeThreshold,
 #    35  : (IE_,  "Subsequent Time Threshold"),
 #    36  : (IE_,  "Inactivity Detection Time"),
 #    37  : (IE_,  "Reporting Triggers"),
